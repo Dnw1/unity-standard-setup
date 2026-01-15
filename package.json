@@ -1,0 +1,13 @@
+{
+  "name": "com.dnw1.standardpackage",
+  "displayName": "Unity Standard Setup",
+  "version": "1.0.0",
+  "unity": "6000.3.2f1",
+  "description": "Basic setup for VR scene",
+  "keywords": ["vr", "setup", "basic"],
+  "category": "Tools",
+  "author": {
+    "name": "Dnw1",
+    "email": "d_way@live.nl"
+  }
+}
