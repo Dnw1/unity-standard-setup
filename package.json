@@ -9,5 +9,22 @@
   "author": {
     "name": "Dnw1",
     "email": "d_way@live.nl"
-  }
+  },
+  "samples": [
+    {
+      "displayName": "Basic VR Scene",
+      "description": "Simple VR setup example",
+      "path": "Samples~/BasicVRScene"
+    },
+    {
+      "displayName": "Json Scene", 
+      "description": "Json example",
+      "path": "Samples~/JsonScenes"
+    },
+    {
+      "displayName": "Media Scene", 
+      "description": "Media example",
+      "path": "Samples~/MediaScenes"
+    }
+  ]
 }
