@@ -1,14 +1,19 @@
 {
-  "name": "com.dnw1.standardpackage",
+  "name": "com.dnw.standardpackage",
   "displayName": "Unity Standard Setup",
-  "version": "1.0.0",
+  "version": "1.1.2",
   "unity": "6000.3",
-  "description": "Basic setup for VR scene",
-  "keywords": ["vr", "setup", "basic"],
+  "description": "VR setup package with example scenes",
+  "keywords": ["vr", "setup", "examples", "standard"],
   "category": "Tools",
   "author": {
     "name": "Dnw1",
-    "email": "d_way@live.nl"
+    "email": "d_way@live.nl",
+    "url": "https://github.com/Dnw1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Dnw1/unity-standard-setup.git"
   },
   "samples": [
     {
