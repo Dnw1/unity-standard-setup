@@ -16,6 +16,9 @@
         "type": "git",
         "url": "https://github.com/Dnw1/unity-standard-setup.git"
     },
+    "dependencies": {
+        "com.meta.xr.sdk.all": "83.0.1"
+    },
     "samples": [
         {
             "displayName": "Basic VR Scene",
