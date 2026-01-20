@@ -195,22 +195,22 @@ public class SceneHandler : MonoBehaviour
         }
 
         // Music (groups + items)
-        if (data?.music != null)
-        {
-            foreach (var mg in data.music)
-            {
-                if (mg?.numbers == null || string.IsNullOrEmpty(mg.folder))
-                    continue;
+        // if (data?.music != null)
+        // {
+        //     foreach (var mg in data.music)
+        //     {
+        //         if (mg?.numbers == null || string.IsNullOrEmpty(mg.folder))
+        //             continue;
 
-                foreach (var mi in mg.numbers)
-                {
-                    if (!string.IsNullOrEmpty(mi.song) && !string.IsNullOrEmpty(mi.subFolder))
-                        filesToDownload.Add(Path.Combine(mg.folder, mi.subFolder, mi.song));
-                    if (!string.IsNullOrEmpty(mi.beatmap) && !string.IsNullOrEmpty(mi.subFolder))
-                        filesToDownload.Add(Path.Combine(mg.folder, mi.subFolder, mi.beatmap));
-                }
-            }
-        }
+        //         foreach (var mi in mg.numbers)
+        //         {
+        //             if (!string.IsNullOrEmpty(mi.song) && !string.IsNullOrEmpty(mi.subFolder))
+        //                 filesToDownload.Add(Path.Combine(mg.folder, mi.subFolder, mi.song));
+        //             if (!string.IsNullOrEmpty(mi.beatmap) && !string.IsNullOrEmpty(mi.subFolder))
+        //                 filesToDownload.Add(Path.Combine(mg.folder, mi.subFolder, mi.beatmap));
+        //         }
+        //     }
+        // }
 
         if (filesToDownload.Count == 0)
         {

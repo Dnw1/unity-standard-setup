@@ -67,9 +67,45 @@ public class VideoManager : MonoBehaviour {
     private VideoPlayer.ErrorEventHandler _currentErrorHandler = null;
     
     // Video fade overlay for transitions
-    private GameObject _fadeOverlayCanvas;
-    private UnityEngine.UI.Image _fadeOverlayImage;
-    private const float DEFAULT_FADE_DURATION = 1f;
+    // private GameObject _fadeOverlayCanvas;
+    // private UnityEngine.UI.Image _fadeOverlayImage;
+    // private const float DEFAULT_FADE_DURATION = 1f;
+
+    public static VideoManager Instance;
+
+    private void Awake() {
+        // if (Instance != null && Instance != this)
+        // {
+        //     Destroy(gameObject);   // Kill the duplicate
+        //     return;
+        // }
+
+        // Instance = this;
+        // DontDestroyOnLoad(gameObject);
+        
+
+        vrVidPlayer.Play();
+        
+        // Initialize CoroutineTracker for performance optimization
+        _coroutineTracker = GetComponent<CoroutineTracker>();
+        if (_coroutineTracker == null)
+        {
+            _coroutineTracker = gameObject.AddComponent<CoroutineTracker>();
+        }
+        
+        // Initialize VideoPerformanceMonitor for adaptive render scale
+        // _videoPerformanceMonitor = GetComponent<VideoPerformanceMonitor>();
+        // if (_videoPerformanceMonitor == null)
+        // {
+        //     _videoPerformanceMonitor = gameObject.AddComponent<VideoPerformanceMonitor>();
+        // }
+        
+        // Cache OVRCameraRig reference
+        CacheOVRCameraRig();
+        
+        // Ensure VRUIManager exists (it will persist across scenes)
+        EnsureVRUIManagerExists();
+    }
 
     public void ProcessTrainingConfig(ConfigData data) {
         Debug.Log(data);
@@ -165,7 +201,7 @@ public class VideoManager : MonoBehaviour {
             }
             
             // Build list of available video names for debugging
-            var videoNames = new System.Collections.Generic.List<string>();
+            var videoNames = new List<string>();
             foreach (var v in data.videos)
             {
                 if (!string.IsNullOrEmpty(v.name))
@@ -181,39 +217,6 @@ public class VideoManager : MonoBehaviour {
         // Final fallback: default volume
         Debug.LogWarning($"[VideoManager]: Using default volume 1.0 for video: {videoName}");
         return 1.0f;
-    }
-
-    public static VideoManager Instance;
-
-    private void Awake() {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);   // Kill the duplicate
-            return;
-        }
-
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
-        
-        // Initialize CoroutineTracker for performance optimization
-        _coroutineTracker = GetComponent<CoroutineTracker>();
-        if (_coroutineTracker == null)
-        {
-            _coroutineTracker = gameObject.AddComponent<CoroutineTracker>();
-        }
-        
-        // Initialize VideoPerformanceMonitor for adaptive render scale
-        // _videoPerformanceMonitor = GetComponent<VideoPerformanceMonitor>();
-        // if (_videoPerformanceMonitor == null)
-        // {
-        //     _videoPerformanceMonitor = gameObject.AddComponent<VideoPerformanceMonitor>();
-        // }
-        
-        // Cache OVRCameraRig reference
-        CacheOVRCameraRig();
-        
-        // Ensure VRUIManager exists (it will persist across scenes)
-        EnsureVRUIManagerExists();
     }
 
     public void ManualSceneInit() {
@@ -264,28 +267,7 @@ public class VideoManager : MonoBehaviour {
         // Only EndScene should have passthrough enabled at start (for restart button visibility)
         // All other scenes start with videos or need explicit passthrough enable for games
         bool isEndScene = scene.name == GameConstants.SceneFiles.EndScene || scene.name.Contains("End");
-        if (!isEndScene)
-        {
-            // Disable passthrough immediately - scene handlers will enable it when needed
-            if (passthrough != null)
-            {
-                passthrough.enabled = false;
-                Debug.Log($"[VideoManager]: Passthrough disabled immediately on scene load: {scene.name}");
-            }
-            else
-            {
-                Debug.LogWarning($"[VideoManager]: Passthrough reference null on scene load: {scene.name}");
-            }
-        }
-        else
-        {
-            // EndScene needs passthrough for restart button
-            if (passthrough != null)
-            {
-                passthrough.enabled = true;
-                Debug.Log($"[VideoManager]: Passthrough enabled for EndScene: {scene.name}");
-            }
-        }
+        passthrough.enabled = false;
 
         // Attempt to recover any scene-local references that might have been destroyed
         TryReassignRuntimeReferences();
@@ -342,22 +324,9 @@ public class VideoManager : MonoBehaviour {
                     Debug.Log("[VideoManager]: Re-enabled OVROverlay on VRVideoPlayer");
                 }
             }
-            catch (System.Exception e)
+            catch (Exception e)
             {
                 Debug.LogWarning("[VideoManager]: Error binding VRVideoPlayer -> VideoPlayer: " + e.Message);
-            }
-        }
-        else
-        {
-            // Fallback: find any VideoPlayer in scene
-            if (vidPlayer == null)
-            {
-                var found = FindFirstObjectByType<VideoPlayer>();
-                if (found != null)
-                {
-                    vidPlayer = found;
-                    Debug.Log("[VideoManager]: Reassigned vidPlayer from scene (fallback)");
-                }
             }
         }
 
@@ -650,12 +619,6 @@ public class VideoManager : MonoBehaviour {
                 yield break;
             }
         }
-        
-        // Validate file exists using FileValidator (after CDN download attempt)
-        // if (!FileValidator.ValidateFile(videoPath, "Video", fileName, showError: true)) {
-        //     CompleteVideo(playId);
-        //     yield break;
-        // }
 
         // Double-check after download that it's still not an image
         if (IsImageFile(videoPath)) {
