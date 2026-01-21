@@ -200,14 +200,6 @@ public class ActionArgs {
 }
 
 [Serializable]
-public class VideoSettings {
-    public string name;
-    public string stereo;
-    public int shape;
-    public bool passthrough;
-}
-
-[Serializable]
 public class AssetInfo {
     public VideoSettings[] video_settings;
     public string name;
@@ -215,13 +207,6 @@ public class AssetInfo {
     public string isLoaded;
     public int defaultIndex;
 }
-// [Serializable]
-// public class VideoSettings {
-//     public string name;
-//     public string stereo;
-//     public int Shape;
-//     public bool passthrough;
-// }
 
 [Serializable]
 public class Bundle {
@@ -245,288 +230,292 @@ enum SocketTasks {
     GET_EXPERIENCES
 }
 
-public class WebSocketManager : MonoBehaviour {
+namespace com.dnw.standardpackage
+{
 
-    WebSocket ws;
-    // [SerializeField] private VideoManager vidManager;
-    // [SerializeField] private SceneController sceneController;
-    // [SerializeField] private LoadSceneManager experienceManager;
-    // [SerializeField] private ManageScenes manageScenes;
-    // [SerializeField] private ObjectManager objectManager;
-    // [SerializeField] private LocalJsonManager localJsonManager;
-    
-    private bool cooldown;
-    private AudioAsset audioAsset;
+    public class WebSocketManager : MonoBehaviour {
+
+        WebSocket ws;
+        // [SerializeField] private VideoManager vidManager;
+        // [SerializeField] private SceneController sceneController;
+        // [SerializeField] private LoadSceneManager experienceManager;
+        // [SerializeField] private ManageScenes manageScenes;
+        // [SerializeField] private ObjectManager objectManager;
+        // [SerializeField] private LocalJsonManager localJsonManager;
+        
+        private bool cooldown;
+        private AudioAsset audioAsset;
 
 
-    private async void Awake()
-    {
-        await OpenWebsocket();
-    }
-
-    private async System.Threading.Tasks.Task OpenWebsocket()
-    {
-        Debug.Log("Opening websocket...");
-
-        // create Meta socket
-        ws = new WebSocket("wss://p3036.office.pack.house/ws");
-        // ws = new MetaWS.WebSocket("wss://api.xrtraining.nl/ws");
-
-        // Attach the correct delegate signatures from the Meta wrapper
-        ws.OnOpen += new WebSocketOpenEventHandler(OnOpen);
-        ws.OnMessage += new WebSocketMessageEventHandler(OnMessage);
-        ws.OnError += new WebSocketErrorEventHandler(OnError);
-        ws.OnClose += new WebSocketCloseEventHandler(OnClose);
-
-        try
+        private async void Awake()
         {
-            await ws.Connect();
-        }
-        catch (Exception ex)
-        {
-            Debug.LogError("WebSocket connect error: " + ex);
-        }
-    }
-
-    private void OnOpen()
-    {
-        Debug.Log("WebSocket Opened");
-        Register();
-    }
-
-    // Meta's OnMessage signature: (byte[] data, int offset, int length)
-    private void OnMessage(byte[] data, int offset, int length)
-    {
-        // copy relevant bytes out of the buffer
-        var payload = new byte[length];
-        Array.Copy(data, offset, payload, 0, length);
-
-        // Marshal processing to main thread because JsonUtility / UnityEngine calls must run on main thread.
-        Meta.Net.NativeWebSocket.MainThreadUtil.Run(ProcessIncomingMessageOnMainThread(payload));
-    }
-
-    // Coroutine executed on main thread
-    private IEnumerator ProcessIncomingMessageOnMainThread(byte[] payload)
-    {
-        var message = Encoding.UTF8.GetString(payload);
-        Debug.Log("OnMessage! " + message);
-
-        JSONResponse json = null;
-        try
-        {
-            json = JsonUtility.FromJson<JSONResponse>(message);
-        }
-        catch (Exception ex)
-        {
-            Debug.LogError("Failed to parse JSON: " + ex + " | raw: " + message);
+            await OpenWebsocket();
         }
 
-        if (json != null)
+        private async System.Threading.Tasks.Task OpenWebsocket()
         {
-            if (json.id == SocketTasks.REGISTER.ToString())
-            {
-                JoinSession();
-                Debug.Log("Register");
-            }
-            else if (json.id == SocketTasks.JOIN_SESSION.ToString())
-            {
-                GetTheConfig();
-                Debug.Log("JOIN_SESSION");
-            }
-            else if (json.id == SocketTasks.GET_CONFIG.ToString())
-            {
-                GetState();
-                Debug.Log("GET_CONFIG");
-                // quizManager.ProcessTrainingConfig(json.config);
-            }
-            else if (json.id == SocketTasks.GET_STATE.ToString())
-            {
-                Debug.Log("GET_STATE");
-            }
+            Debug.Log("Opening websocket...");
 
-            if (json.action == "restart")
+            // create Meta socket
+            ws = new WebSocket("wss://p3036.office.pack.house/ws");
+            // ws = new MetaWS.WebSocket("wss://api.xrtraining.nl/ws");
+
+            // Attach the correct delegate signatures from the Meta wrapper
+            ws.OnOpen += new WebSocketOpenEventHandler(OnOpen);
+            ws.OnMessage += new WebSocketMessageEventHandler(OnMessage);
+            ws.OnError += new WebSocketErrorEventHandler(OnError);
+            ws.OnClose += new WebSocketCloseEventHandler(OnClose);
+
+            try
             {
-                // Close and reopen: run asynchronously but do not block the coroutine.
-                _ = ReconnectAsync();
+                await ws.Connect();
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError("WebSocket connect error: " + ex);
             }
         }
 
-        yield break;
-    }
-
-    private async System.Threading.Tasks.Task ReconnectAsync()
-    {
-        try
+        private void OnOpen()
         {
-            if (ws != null)
+            Debug.Log("WebSocket Opened");
+            Register();
+        }
+
+        // Meta's OnMessage signature: (byte[] data, int offset, int length)
+        private void OnMessage(byte[] data, int offset, int length)
+        {
+            // copy relevant bytes out of the buffer
+            var payload = new byte[length];
+            Array.Copy(data, offset, payload, 0, length);
+
+            // Marshal processing to main thread because JsonUtility / UnityEngine calls must run on main thread.
+            Meta.Net.NativeWebSocket.MainThreadUtil.Run(ProcessIncomingMessageOnMainThread(payload));
+        }
+
+        // Coroutine executed on main thread
+        private IEnumerator ProcessIncomingMessageOnMainThread(byte[] payload)
+        {
+            var message = Encoding.UTF8.GetString(payload);
+            Debug.Log("OnMessage! " + message);
+
+            JSONResponse json = null;
+            try
             {
-                await ws.Close();
+                json = JsonUtility.FromJson<JSONResponse>(message);
             }
+            catch (Exception ex)
+            {
+                Debug.LogError("Failed to parse JSON: " + ex + " | raw: " + message);
+            }
+
+            if (json != null)
+            {
+                if (json.id == SocketTasks.REGISTER.ToString())
+                {
+                    JoinSession();
+                    Debug.Log("Register");
+                }
+                else if (json.id == SocketTasks.JOIN_SESSION.ToString())
+                {
+                    GetTheConfig();
+                    Debug.Log("JOIN_SESSION");
+                }
+                else if (json.id == SocketTasks.GET_CONFIG.ToString())
+                {
+                    GetState();
+                    Debug.Log("GET_CONFIG");
+                    // quizManager.ProcessTrainingConfig(json.config);
+                }
+                else if (json.id == SocketTasks.GET_STATE.ToString())
+                {
+                    Debug.Log("GET_STATE");
+                }
+
+                if (json.action == "restart")
+                {
+                    // Close and reopen: run asynchronously but do not block the coroutine.
+                    _ = ReconnectAsync();
+                }
+            }
+
+            yield break;
         }
-        catch (Exception ex)
+
+        private async System.Threading.Tasks.Task ReconnectAsync()
         {
-            Debug.LogError("Error closing websocket for restart: " + ex);
+            try
+            {
+                if (ws != null)
+                {
+                    await ws.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError("Error closing websocket for restart: " + ex);
+            }
+
+            // small delay to avoid tight restart loops
+            await System.Threading.Tasks.Task.Delay(250);
+
+            await OpenWebsocket();
         }
 
-        // small delay to avoid tight restart loops
-        await System.Threading.Tasks.Task.Delay(250);
+        private void OnError(string errorMsg)
+        {
+            Debug.LogError("WebSocket Error: " + errorMsg);
+        }
 
-        await OpenWebsocket();
+        private void OnClose(WebSocketCloseCode code)
+        {
+            Debug.Log("WebSocket Closed: " + code);
+        }
+
+        // private async void Awake() {
+        //     this.OpenWebsocket();
+        // }
+
+        // private void Start() {
+        //     // sceneController = GameObject.Find("SceneController").GetComponent<SceneController>();
+        //     // experienceManager = GameObject.Find("LoadSceneManager").GetComponent<LoadSceneManager>();
+        // }
+
+        // private async void OpenWebsocket() {
+        //     Debug.Log("I am Awake. >>>>");
+        //     //ws = new WebSocket("wss://p3036.office.pack.house/ws");
+        //     ws = new WebSocket("wss://api.projectxr.io/ws");
+        //     //ws = new WebSocket("wss://api.xrtraining.nl/ws");
+
+        //     ws.OnOpen += () => {
+        //         Register();
+        //     };
+        //     ws.OnMessage += async (bytes) => {
+        //         // getting the message as a string
+        //         Debug.Log("Set!");
+        //         var message = Encoding.UTF8.GetString(bytes);
+        //         Debug.Log("OnMessage! " + message);
+        //         var json = JsonUtility.FromJson<JSONResponse>(message);
+
+        //         if (json.id == SocketTasks.REGISTER.ToString()) {
+        //             GetExperiences();
+        //             Debug.Log("Register");
+        //         }
+        //         if (json.id == SocketTasks.GET_EXPERIENCES.ToString()) {
+        //             var experiences = JsonUtility.FromJson<ExperiencesResponse>(message);
+                    
+        //             experienceManager.ProcessConfigInfo(experiences.data);
+        //             Debug.Log($"Json Experience response: {json}");
+        //         }
+        //         if (json.id == SocketTasks.JOIN_SESSION.ToString()) {
+        //             GetTheConfig();
+        //             Debug.Log("JOIN_SESSION");
+        //         }
+        //         if (json.id == SocketTasks.GET_CONFIG.ToString()) {
+        //             GetState();
+        //             Debug.Log("GET_CONFIG");
+        //             sceneController.ProcessTrainingConfig(json.config);
+        //             //manageScenes.ProcessTrainingConfig(json.config);
+        //             //vidManager.ProcessTrainingConfig(json.config);
+        //             //objectManager.ProcessTrainingConfig(json.config);
+        //             //localJsonManager.ProcessTrainingConfig(json.config);
+        //             //handMenuManager.ProcessTrainingConfig(json.config);
+        //         }
+        //         if (json.id == SocketTasks.GET_STATE.ToString()) {
+        //             Debug.Log("GET_STATE");
+        //             // if (json.state.role != null) sceneManager.SetRole(json.state.role);
+        //             // if (json.state.time > 0) sceneManager.SetTime(json.state.time);
+                    
+        //             //!!
+        //             // if (!String.IsNullOrEmpty(json.state.scene)) {
+        //             //     Debug.Log("GOTO SCENE CALLED (STATE): " + json.state.scene);
+        //             //     manageScenes.GoToScene(json.state.scene);
+        //             // }
+
+        //             // if (json.state.marker != null) sceneManager.MarkersInput(json.state.marker);
+        //         }
+        //         if (json.action == "goToScene" && !cooldown) {
+        //             cooldown = true;
+        //             // manageScenes.GoToScene(json.args.name);
+        //             StartCoroutine(Cooldown());
+        //         }
+        //         // if (json.action == "playAudio") {
+        //         //     vidManager.AudioPlayer(audioAsset);
+        //         // }
+        //         if(json.action == "playVideo" && !cooldown) {
+        //             cooldown = true; 
+        //             //vidManager.FindVideo(json.args.name);
+        //             StartCoroutine(Cooldown());
+        //         }
+        //         // if(json.action == "enablePassThrough") {
+        //         //     if(json.args.enable){
+        //         //         vidManager.PassthroughCall(true);
+        //         //         Debug.Log("<>Enable" + json.args.enable);
+        //         //     } else if(!json.args.enable) {
+        //         //         vidManager.PassthroughCall(false);
+        //         //         Debug.Log("<>Disable" + json.args.enable);
+        //         //     }
+        //         // }
+        //         // if(json.action == "ending") {
+        //         //     SceneManager.LoadScene(json.args.text);
+        //         // }
+        //         // if (json.action == "restart") {
+        //         //     await ws.Close();
+        //         //     this.OpenWebsocket();
+        //         //     SceneManager.LoadScene(json.args.text);
+        //         // }
+        //     };
+        //     ws.OnError += (e) => {
+        //         Debug.Log("Error! " + e);
+        //     };
+        //     ws.OnClose += (e) => {
+        //         Debug.Log("Connection closed!");
+        //     };
+
+        //     await ws.Connect();
+        // }
+
+        private IEnumerator Cooldown()
+        {
+            cooldown = true;
+            yield return new WaitForSeconds(2.0f);
+            cooldown = false;
+        }
+
+        // private void Update() {
+        //     #if !UNITY_WEBGL || UNITY_EDITOR || UNITY_ANDROID
+        //     ws.DispatchMessageQueue();
+        //     #endif
+        // }
+
+        private async void OnApplicationQuit() {
+            await ws.Close();
+        }
+        public void Register() {
+            var deviceId = SystemInfo.deviceUniqueIdentifier;
+            Debug.Log("DEVICE:" + deviceId);
+            ws.SendText("{\"id\": \""+SocketTasks.REGISTER+"\",\"action\": \"register\", \"args\": { \"deviceId\": \""+deviceId+"\"}}");
+        }
+
+        public void GetExperiences() {
+            Debug.Log("GetExperience");
+            ws.SendText("{\"id\": \""+SocketTasks.GET_EXPERIENCES+"\",\"action\": \"getExperiences\" }");
+        }
+        public void JoinSession() {
+            Debug.Log("JoinSession");
+            ws.SendText("{\"id\": \""+SocketTasks.JOIN_SESSION+"\",\"action\": \"joinSession\", \"args\": { \"id\": \"fakeSessionId\"}}");
+        }
+        public void GetTheConfig() {
+            Debug.Log("GetConfig");
+            ws.SendText("{\"id\": \""+SocketTasks.GET_CONFIG+"\",\"action\": \"getConfig\"}");
+        }
+        public void GetState() {
+            Debug.Log("GetState");
+            ws.SendText("{\"id\": \""+SocketTasks.GET_STATE+"\",\"action\": \"getState\"}");
+        }
+        public void SendDeviceID() {
+            ws.SendText($"{SystemInfo.deviceUniqueIdentifier}");
+        }
+
     }
-
-    private void OnError(string errorMsg)
-    {
-        Debug.LogError("WebSocket Error: " + errorMsg);
-    }
-
-    private void OnClose(WebSocketCloseCode code)
-    {
-        Debug.Log("WebSocket Closed: " + code);
-    }
-
-    // private async void Awake() {
-    //     this.OpenWebsocket();
-    // }
-
-    // private void Start() {
-    //     // sceneController = GameObject.Find("SceneController").GetComponent<SceneController>();
-    //     // experienceManager = GameObject.Find("LoadSceneManager").GetComponent<LoadSceneManager>();
-    // }
-
-    // private async void OpenWebsocket() {
-    //     Debug.Log("I am Awake. >>>>");
-    //     //ws = new WebSocket("wss://p3036.office.pack.house/ws");
-    //     ws = new WebSocket("wss://api.projectxr.io/ws");
-    //     //ws = new WebSocket("wss://api.xrtraining.nl/ws");
-
-    //     ws.OnOpen += () => {
-    //         Register();
-    //     };
-    //     ws.OnMessage += async (bytes) => {
-    //         // getting the message as a string
-    //         Debug.Log("Set!");
-    //         var message = Encoding.UTF8.GetString(bytes);
-    //         Debug.Log("OnMessage! " + message);
-    //         var json = JsonUtility.FromJson<JSONResponse>(message);
-
-    //         if (json.id == SocketTasks.REGISTER.ToString()) {
-    //             GetExperiences();
-    //             Debug.Log("Register");
-    //         }
-    //         if (json.id == SocketTasks.GET_EXPERIENCES.ToString()) {
-    //             var experiences = JsonUtility.FromJson<ExperiencesResponse>(message);
-                
-    //             experienceManager.ProcessConfigInfo(experiences.data);
-    //             Debug.Log($"Json Experience response: {json}");
-    //         }
-    //         if (json.id == SocketTasks.JOIN_SESSION.ToString()) {
-    //             GetTheConfig();
-    //             Debug.Log("JOIN_SESSION");
-    //         }
-    //         if (json.id == SocketTasks.GET_CONFIG.ToString()) {
-    //             GetState();
-    //             Debug.Log("GET_CONFIG");
-    //             sceneController.ProcessTrainingConfig(json.config);
-    //             //manageScenes.ProcessTrainingConfig(json.config);
-    //             //vidManager.ProcessTrainingConfig(json.config);
-    //             //objectManager.ProcessTrainingConfig(json.config);
-    //             //localJsonManager.ProcessTrainingConfig(json.config);
-    //             //handMenuManager.ProcessTrainingConfig(json.config);
-    //         }
-    //         if (json.id == SocketTasks.GET_STATE.ToString()) {
-    //             Debug.Log("GET_STATE");
-    //             // if (json.state.role != null) sceneManager.SetRole(json.state.role);
-    //             // if (json.state.time > 0) sceneManager.SetTime(json.state.time);
-                
-    //             //!!
-    //             // if (!String.IsNullOrEmpty(json.state.scene)) {
-    //             //     Debug.Log("GOTO SCENE CALLED (STATE): " + json.state.scene);
-    //             //     manageScenes.GoToScene(json.state.scene);
-    //             // }
-
-    //             // if (json.state.marker != null) sceneManager.MarkersInput(json.state.marker);
-    //         }
-    //         if (json.action == "goToScene" && !cooldown) {
-    //             cooldown = true;
-    //             // manageScenes.GoToScene(json.args.name);
-    //             StartCoroutine(Cooldown());
-    //         }
-    //         // if (json.action == "playAudio") {
-    //         //     vidManager.AudioPlayer(audioAsset);
-    //         // }
-    //         if(json.action == "playVideo" && !cooldown) {
-    //             cooldown = true; 
-    //             //vidManager.FindVideo(json.args.name);
-    //             StartCoroutine(Cooldown());
-    //         }
-    //         // if(json.action == "enablePassThrough") {
-    //         //     if(json.args.enable){
-    //         //         vidManager.PassthroughCall(true);
-    //         //         Debug.Log("<>Enable" + json.args.enable);
-    //         //     } else if(!json.args.enable) {
-    //         //         vidManager.PassthroughCall(false);
-    //         //         Debug.Log("<>Disable" + json.args.enable);
-    //         //     }
-    //         // }
-    //         // if(json.action == "ending") {
-    //         //     SceneManager.LoadScene(json.args.text);
-    //         // }
-    //         // if (json.action == "restart") {
-    //         //     await ws.Close();
-    //         //     this.OpenWebsocket();
-    //         //     SceneManager.LoadScene(json.args.text);
-    //         // }
-    //     };
-    //     ws.OnError += (e) => {
-    //         Debug.Log("Error! " + e);
-    //     };
-    //     ws.OnClose += (e) => {
-    //         Debug.Log("Connection closed!");
-    //     };
-
-    //     await ws.Connect();
-    // }
-
-    private IEnumerator Cooldown()
-    {
-        cooldown = true;
-        yield return new WaitForSeconds(2.0f);
-        cooldown = false;
-    }
-
-    // private void Update() {
-    //     #if !UNITY_WEBGL || UNITY_EDITOR || UNITY_ANDROID
-    //     ws.DispatchMessageQueue();
-    //     #endif
-    // }
-
-    private async void OnApplicationQuit() {
-        await ws.Close();
-    }
-    public void Register() {
-        var deviceId = SystemInfo.deviceUniqueIdentifier;
-        Debug.Log("DEVICE:" + deviceId);
-        ws.SendText("{\"id\": \""+SocketTasks.REGISTER+"\",\"action\": \"register\", \"args\": { \"deviceId\": \""+deviceId+"\"}}");
-    }
-
-    public void GetExperiences() {
-        Debug.Log("GetExperience");
-        ws.SendText("{\"id\": \""+SocketTasks.GET_EXPERIENCES+"\",\"action\": \"getExperiences\" }");
-    }
-    public void JoinSession() {
-        Debug.Log("JoinSession");
-        ws.SendText("{\"id\": \""+SocketTasks.JOIN_SESSION+"\",\"action\": \"joinSession\", \"args\": { \"id\": \"fakeSessionId\"}}");
-    }
-    public void GetTheConfig() {
-        Debug.Log("GetConfig");
-        ws.SendText("{\"id\": \""+SocketTasks.GET_CONFIG+"\",\"action\": \"getConfig\"}");
-    }
-    public void GetState() {
-        Debug.Log("GetState");
-        ws.SendText("{\"id\": \""+SocketTasks.GET_STATE+"\",\"action\": \"getState\"}");
-    }
-    public void SendDeviceID() {
-        ws.SendText($"{SystemInfo.deviceUniqueIdentifier}");
-    }
-
 }

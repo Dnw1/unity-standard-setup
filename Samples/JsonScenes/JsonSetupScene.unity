@@ -1604,6 +1604,54 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &1087904259
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1087904261}
+  - component: {fileID: 1087904260}
+  m_Layer: 0
+  m_Name: SceneHandler
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1087904260
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1087904259}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 70e4013048d3dd54b93dae2254110fa8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: com.dnw.standardpackage::com.dnw.standardpackage.SceneHandler
+  vidManager: {fileID: 0}
+  sceneFlags: []
+  skipButton: {fileID: 0}
+  _buttonHandler: {fileID: 0}
+--- !u!4 &1087904261
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1087904259}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 4.58863, y: -0, z: 37.74103}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1109936775
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2585,25 +2633,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: de466dcda47b7264794c30e6cbd02933, type: 3}
   m_Name: 
   m_EditorClassIdentifier: com.dnw.standardpackage::JsonStructure
-  mapFilePath: 
   bpm: 123
-  notes: []
   data:
-    wordList:
-      words: []
-    pointAward:
-      correctWord: 0
-      maxTimeAward: 0
-      minTimeAward: 0
     videos: []
+    videoSettings:
+      videoShape: 0
+      videoStereo: 
     audios: []
     lighting: []
     postProcessing: []
-    music: []
-  audioSource: {fileID: 0}
   sceneH: {fileID: 0}
   videoM: {fileID: 0}
-  vid: {fileID: 0}
 --- !u!4 &1639425077
 Transform:
   m_ObjectHideFlags: 0
@@ -120034,3 +120074,4 @@ SceneRoots:
   - {fileID: 1309065059}
   - {fileID: 1645764005}
   - {fileID: 1109936775}
+  - {fileID: 1087904261}

@@ -1,7 +1,9 @@
     using System.Collections;
     using UnityEngine;
     using UnityEngine.SceneManagement;
-    using UnityEngine.Video;
+
+namespace com.dnw.standardpackage
+{
 
     /// <summary>
     /// Handles resetting the experience, including auto-reset after completion and manual reset via button.
@@ -57,7 +59,6 @@
 
         /// <summary>
         /// Waits for any playing videos to finish, then enables passthrough and shows restart button.
-        /// CRITICAL FIX: Wait for full 20 seconds for VAKANTIE video, then ensure video is completely stopped and hidden.
         /// </summary>
         private IEnumerator WaitForVideoToFinishThenShowRestart()
         {
@@ -197,8 +198,6 @@
         /// Called by UI Button to immediately reset the experience.
         /// Also stops auto-reset if it's still running.
         /// Disables passthrough and resumes everything before restarting.
-        /// CRITICAL FIX: Added debouncing to prevent double press and lag.
-        /// CRITICAL FIX: Stop and hide any videos before restarting to prevent video from showing briefly.
         /// </summary>
         public void RestartByReload()
         {
@@ -498,3 +497,4 @@ private void DestroySpecificDontDestroyOnLoadObjects(string[] targetNames)
             Destroy(temp);
         }
     }
+}
